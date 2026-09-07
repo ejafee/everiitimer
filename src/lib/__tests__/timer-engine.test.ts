@@ -126,6 +126,50 @@ describe("TimerEngine – step transitions", () => {
     expect(s.status).toBe("idle");
     expect(s.laps).toEqual([]);
   });
+
+  it("reset notifies subscribers via onStepChange so UI can sync", () => {
+    let snapshot: { idx: number; remaining: number; status: string } | null =
+      null;
+    let reason = "";
+    const engine = createTimerEngine(
+      [work("1", 10), rest("2", 5)],
+      "p",
+      "P",
+      {
+        onStepChange: (s, _i, r) => {
+          snapshot = {
+            idx: s.currentStepIndex,
+            remaining: s.remainingMs,
+            status: s.status,
+          };
+          reason = r;
+        },
+      },
+    );
+    engine.start();
+    engine.tick(5_000);
+    snapshot = null;
+    reason = "";
+    engine.reset();
+    expect(snapshot).not.toBeNull();
+    expect(snapshot!.idx).toBe(0);
+    expect(snapshot!.remaining).toBe(10_000);
+    expect(snapshot!.status).toBe("idle");
+    expect(reason).toBe("reset");
+  });
+
+  it("reset clears laps and elapsed", () => {
+    const engine = createTimerEngine([work("1", 60)], "p", "P");
+    engine.start();
+    engine.tick(10_000);
+    engine.lap();
+    engine.tick(5_000);
+    engine.lap();
+    engine.reset();
+    const s = engine.getState();
+    expect(s.laps).toEqual([]);
+    expect(s.elapsedMs).toBe(0);
+  });
 });
 
 describe("TimerEngine – pause/resume and laps", () => {

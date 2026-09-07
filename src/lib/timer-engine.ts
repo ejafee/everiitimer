@@ -4,7 +4,7 @@ import type {
   TimerStep,
 } from "@/types/timer";
 
-export type EngineStepChangeReason = "complete" | "skip" | "lap";
+export type EngineStepChangeReason = "complete" | "skip" | "lap" | "reset";
 
 export interface EngineCallbacks {
   onStepChange?: (
@@ -162,6 +162,7 @@ export function createTimerEngine(
         countUpMs: 0,
       };
       lastSecondFloor = -1;
+      callbacks.onStepChange?.(snapshot(), 0, "reset");
     },
 
     skip() {

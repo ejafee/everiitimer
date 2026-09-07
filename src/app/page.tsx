@@ -82,8 +82,8 @@ export default function HomePage() {
           AudioAlerts.lastFiveTick();
         }
       },
-      onStepChange: (s) => {
-        if (settings.sound) AudioAlerts.stepTransition();
+      onStepChange: (s, _idx, reason) => {
+        if (settings.sound && reason !== "reset") AudioAlerts.stepTransition();
         setSession(s);
         setActiveSession(s);
       },
